@@ -168,14 +168,14 @@ class Plugin {
                     },
                     "Name": aliasName,
                     "ProvisionedConcurrencyConfig": provisionedConcurrencyVersion?.Properties.ProvisionedConcurrencyConfig,
-                    "RoutingConfig" : {
+                    "RoutingConfig" : provisionedConcurrencyVersion?.Properties.ProvisionedConcurrencyConfig ? {
                         "AdditionalVersionWeights": [{
                             "FunctionVersion" : {
                                 "Fn::GetAtt": [ functionObject.versionLogicalId, "Version" ]
                             },
                             "FunctionWeight" : 0.5 
                         }]
-                    }
+                    } : null
                 },
                 DependsOn: functionLogicalId,
             }

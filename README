@@ -5,6 +5,8 @@ controll the roll out of new verzions of their code.
 
 When deploying 50% of your traffic will automatically go to the new version. Run `sls demote` to revert ot the old veraion or `sls promote` to move to the new version.
 
+When deploying for the first time without any aliases we will shift all traffic to the new version.
+
 ## Roadmap
 
 - Add support to Code Deploy for incremental traffice shifting
@@ -12,4 +14,5 @@ When deploying 50% of your traffic will automatically go to the new version. Run
 - Add support for specifying which stage to run on
 - Add support to disable/enable canary deployment
 - Add support for creating an alias per deploy
+- Add way to deploy for the first time without all traffic being shifted.
 - Resolve TODOs
