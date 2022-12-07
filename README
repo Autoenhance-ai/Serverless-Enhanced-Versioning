@@ -12,4 +12,3 @@ When deploying 50% of your traffic will automatically go to the new version. Run
 - Add support for specifying which stage to run on
 - Add support to disable/enable canary deployment
 - Add support for creating an alias per deploy
-- Unit Tests
