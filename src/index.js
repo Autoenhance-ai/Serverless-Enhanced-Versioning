@@ -163,7 +163,9 @@ class Plugin {
                 "Properties" : {
                     "Description" : `The latest version`,
                     "FunctionName" : { Ref: functionLogicalId },
-                    "FunctionVersion" : currentAlias.FunctionVersion,
+                    "FunctionVersion" : currentAlias?.FunctionVersion ??  {
+                        "Fn::GetAtt": [ functionObject.versionLogicalId, "Version" ]
+                    },
                     "Name": aliasName,
                     "ProvisionedConcurrencyConfig": provisionedConcurrencyVersion?.Properties.ProvisionedConcurrencyConfig ?? {},
                     "RoutingConfig" : {
