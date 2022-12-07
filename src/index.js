@@ -137,7 +137,7 @@ class Plugin {
                 Name: aliasName
             })
             .catch((error) => {
-                if (error.message.match(/not found/)) {
+                if (error.message.match(/Cannot find /)) {
                   return null
                 }
 
