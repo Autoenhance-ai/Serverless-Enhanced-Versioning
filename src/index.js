@@ -18,7 +18,6 @@ class Plugin {
         };
 
         this.hooks = {
-            "initilize": this.init.bind(this),
             "after:aws:package:finalize:mergeCustomProviderResources": this.generateResources.bind(this),
             "demote:run": this.demote.bind(this),
             "promote:run": this.promote.bind(this),
@@ -31,12 +30,6 @@ class Plugin {
 
     get compiledTpl () {
         return this.service.provider.compiledCloudFormationTemplate
-    }
-
-    init() {
-        if (!this.service.provider.versionFunctions) {
-            throw Error("Versioning plugin cannot be used when versionFunctions is set to false.")
-        }
     }
 
     async demote() {
@@ -114,6 +107,10 @@ class Plugin {
 
     async generateResources() {
 
+        if (!this.service.provider.versionFunctions) {
+            throw Error("Versioning plugin cannot be used when versionFunctions is set to false.")
+        }
+
         const Resources = this.compiledTpl.Resources
 
         this.serverless.cli.log("Generating Versions...", "versioning");
@@ -146,8 +143,6 @@ class Plugin {
                 throw error
             });
 
-            console.log()
-
             let provisionedConcurrencyVersion = null;
 
             if (aliasLogicalId) {
@@ -168,6 +163,9 @@ class Plugin {
                     },
                     "Name": aliasName,
                     "ProvisionedConcurrencyConfig": provisionedConcurrencyVersion?.Properties.ProvisionedConcurrencyConfig,
+
+                    // TOFO: why is this setup even though no concurrency is provisioned
+                    //
                     "RoutingConfig" : provisionedConcurrencyVersion?.Properties.ProvisionedConcurrencyConfig ? {
                         "AdditionalVersionWeights": [{
                             "FunctionVersion" : {
