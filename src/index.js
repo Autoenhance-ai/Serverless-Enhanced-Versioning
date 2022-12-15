@@ -163,9 +163,6 @@ class Plugin {
                     },
                     "Name": aliasName,
                     "ProvisionedConcurrencyConfig": provisionedConcurrencyVersion?.Properties.ProvisionedConcurrencyConfig,
-
-                    // TOFO: why is this setup even though no concurrency is provisioned
-                    //
                     "RoutingConfig" : provisionedConcurrencyVersion?.Properties.ProvisionedConcurrencyConfig ? {
                         "AdditionalVersionWeights": [{
                             "FunctionVersion" : {
