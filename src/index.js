@@ -1,5 +1,3 @@
-const _ = require('lodash');
-
 class Plugin {
     constructor(serverless) {
 
@@ -118,15 +116,13 @@ class Plugin {
         for (var functionName of this.functions) {
 
             const functionObject = this.serverless.service.getFunction(functionName);
-            this.serverless.cli.log(JSON.stringify(functionObject), "versioning");
-
             const functionLogicalId = this.naming.getLambdaLogicalId(functionName)
             const aliasName = "Latest"
 
             let aliasLogicalId = Object.keys(this.compiledTpl.Resources).find((key) => {
                 const resource = this.compiledTpl.Resources[key];
                 if (resource.Type !== 'AWS::Lambda::Alias') return false;
-                return _.get(resource, 'Properties.FunctionName.Ref') === functionLogicalId;
+                return resource.Properties?.FunctionName?.Ref === functionLogicalId;
             });
 
             const currentAlias =  await this.provider.request('Lambda', 'getAlias', {
@@ -163,7 +159,7 @@ class Plugin {
                     },
                     "Name": aliasName,
                     "ProvisionedConcurrencyConfig": provisionedConcurrencyVersion?.Properties.ProvisionedConcurrencyConfig,
-                    "RoutingConfig" : currentAlias?.FunctionVersion !== null ? {
+                    "RoutingConfig" : currentAlias ? {
                         "AdditionalVersionWeights": [{
                             "FunctionVersion" : {
                                 "Fn::GetAtt": [ functionObject.versionLogicalId, "Version" ]
