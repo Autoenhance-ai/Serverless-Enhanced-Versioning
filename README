@@ -14,5 +14,6 @@ When deploying for the first time without any aliases we will shift all traffic 
 - Add support for specifying which stage to run on
 - Add support to disable/enable canary deployment
 - Add support for creating an alias per deploy
+- Add support for handling setups where other alises are created
 - Add way to deploy for the first time without all traffic being shifted.
 - Resolve TODOs
