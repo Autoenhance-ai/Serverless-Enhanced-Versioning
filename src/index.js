@@ -88,6 +88,10 @@ class Plugin {
             //
             const newVersion = Object.keys(currentAlias?.RoutingConfig?.AdditionalVersionWeights ?? {})[0]
 
+            if (!newVersion) {
+                continue
+            }
+
             await this.provider.request('Lambda', 'updateAlias', {
                 FunctionName: functionObject.name,
                 FunctionVersion: newVersion,
