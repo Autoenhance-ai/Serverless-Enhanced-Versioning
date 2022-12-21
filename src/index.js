@@ -44,17 +44,14 @@ class Plugin {
                 Name: aliasName
             })
             .catch((error) => {
-
-                // TODO: Build a nice Serverless Error
-                //
-                throw error
+                console.error(error)
             });
 
             // TODO: handle running against already demoted config or a promoted config or no rotuing config
             //
             var newWeights = {}
 
-            for (var version in currentAlias.RoutingConfig.AdditionalVersionWeights) {
+            for (var version in currentAlias?.RoutingConfig?.AdditionalVersionWeights ?? {}) {
                 newWeights[version] = 0;
             }
 
@@ -84,15 +81,12 @@ class Plugin {
                 Name: aliasName
             })
             .catch((error) => {
-            
-                // TODO: Build a nice Serverless Error
-                //
-                throw error
+                console.error(error)
             });
 
             // TODO: handle running against already demoted config or a promoted config or no rotuing config
             //
-            const newVersion = Object.keys(currentAlias.RoutingConfig.AdditionalVersionWeights)[0]
+            const newVersion = Object.keys(currentAlias?.RoutingConfig?.AdditionalVersionWeights ?? {})[0]
 
             await this.provider.request('Lambda', 'updateAlias', {
                 FunctionName: functionObject.name,
