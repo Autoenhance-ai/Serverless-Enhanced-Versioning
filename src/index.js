@@ -113,9 +113,15 @@ class Plugin {
 
         for (var functionName of this.functions) {
 
+            // Ignore the serverless-warmup function
+            //
+            if (functionName == 'WarmUpPluginWarmerLambdaFunction') continue;
+
             const functionObject = this.serverless.service.getFunction(functionName);
             const functionLogicalId = this.naming.getLambdaLogicalId(functionName)
             const aliasName = "Latest"
+
+            WarmUpPluginWarmerLambdaFunction
 
             let aliasLogicalId = Object.keys(this.compiledTpl.Resources).find((key) => {
                 const resource = this.compiledTpl.Resources[key];
