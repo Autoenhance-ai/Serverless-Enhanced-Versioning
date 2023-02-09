@@ -113,9 +113,9 @@ class Plugin {
 
         for (var functionName of this.functions) {
 
-            // Ignore the serverless-warmup function
+            // TODO: Ignore the serverless-warmup function
             //
-            if (functionName == 'WarmUpPluginWarmerLambdaFunction') continue;
+            // if (functionName == 'WarmUpPluginWarmerLambdaFunction') continue;
 
             const functionObject = this.serverless.service.getFunction(functionName);
             const functionLogicalId = this.naming.getLambdaLogicalId(functionName)
