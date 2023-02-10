@@ -167,10 +167,6 @@ class Plugin {
             const version = Resources[functionObject.versionLogicalId]
             const useRouteConfig = currentAlias !== null && currentFunction.Configuration.CodeSha256 !== version.Properties.CodeSha256
 
-            // const currentCodeSha = currentAlias?.FunctionVersion
-            this.serverless.cli.log("Generating Versions...", currentFunction.Configuration.CodeSha256);
-            this.serverless.cli.log("Generating Versions...", version.Properties.CodeSha256);
-
             Resources[aliasLogicalId] = {
                 "Type" : "AWS::Lambda::Alias",
                 "Properties" : {
