@@ -150,10 +150,63 @@ class Plugin {
             // const currentCodeSha = currentAlias?.FunctionVersion
 
             this.serverless.cli.log("Generating Versions...", JSON.stringify(currentAlias));
-            this.serverless.cli.log("Generating Versions...", functionObject.versionLogicalId);
+            this.serverless.cli.log("Generating Versions...", JSON.stringify(functionObject));
 
-            console.log(currentAlias)
-            console.log(functionObject.versionLogicalId);
+            // {
+            //     "Concurrency": {
+            //         "ReservedConcurrentExecutions": 100
+            //     },
+            //     "Code": {
+            //         "RepositoryType": "S3",
+            //         "Location": "https://awslambda-us-west-2-tasks.s3.us-west-2.amazonaws.com/snapshots/123456789012/my-function..."
+            //     },
+            //     "Configuration": {
+            //         "TracingConfig": {
+            //             "Mode": "PassThrough"
+            //         },
+            //         "Version": "$LATEST",
+            //         "CodeSha256": "5tT2qgzYUHoqwR616pZ2dpkn/0J1FrzJmlKidWaaCgk=",
+            //         "FunctionName": "my-function",
+            //         "VpcConfig": {
+            //             "SubnetIds": [],
+            //             "VpcId": "",
+            //             "SecurityGroupIds": []
+            //         },
+            //         "MemorySize": 128,
+            //         "RevisionId": "28f0fb31-5c5c-43d3-8955-03e76c5c1075",
+            //         "CodeSize": 304,
+            //         "FunctionArn": "arn:aws:lambda:us-west-2:123456789012:function:my-function",
+            //         "Handler": "index.handler",
+            //         "Role": "arn:aws:iam::123456789012:role/service-role/helloWorldPython-role-uy3l9qyq",
+            //         "Timeout": 3,
+            //         "LastModified": "2019-09-24T18:20:35.054+0000",
+            //         "Runtime": "nodejs10.x",
+            //         "Description": ""
+            //     }
+            // }
+
+            const currentAlias = await this.provider.request('Lambda', 'getAlias', {
+                FunctionName: functionObject.name,
+                Name: aliasName
+            })
+            .catch((error) => {
+                if (error.message.match(/Cannot find /)) {
+                  return null
+                }
+
+                // TODO: Build a nice Serverless Error
+                //
+                throw error
+            });
+
+{
+  AliasArn: 'arn:aws:lambda:eu-west-1:694064703852:function:ai-prod-warmup-plugin-warmer:Latest',
+  Name: 'Latest',
+  FunctionVersion: '1',
+  Description: 'The latest version',
+  RevisionId: 'c17e5609-f7e3-464f-877a-563cadb89f98'
+}
+WarmUpPluginWarmerLambdaVersionEKjorMGyRCuswKvqbYOS06cimhbW4lPDD2cszz17Tx4
 
             Resources[aliasLogicalId] = {
                 "Type" : "AWS::Lambda::Alias",
