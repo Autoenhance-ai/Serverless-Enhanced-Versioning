@@ -49,7 +49,7 @@ class Plugin {
                 console.error(error)
             });
 
-            // TODO: handle running against already demoted config or a promoted config or no rotuing config
+            // TODO: handle running against already demoted config or a promoted config or no routing config
             //
             var newWeights = {}
 
@@ -86,7 +86,7 @@ class Plugin {
                 console.error(error)
             });
 
-            // TODO: handle running against already demoted config or a promoted config or no rotuing config
+            // TODO: handle running against already demoted config or a promoted config or no routing config
             //
             const newVersion = Object.keys(currentAlias?.RoutingConfig?.AdditionalVersionWeights ?? {})[0]
 
@@ -151,8 +151,9 @@ class Plugin {
             aliasLogicalId = `${functionLogicalId}AliasLatest`;
             functionObject.targetAlias = { name: aliasName, logicalId: aliasLogicalId };
 
-            const currentFunction = await this.provider.request('Lambda', 'getFunction', {
-                FunctionName: functionObject.name
+            const currentFunction = currentAlias ? await this.provider.request('Lambda', 'getFunction', {
+                FunctionName: functionObject.name, 
+                Version: currentAlias.FunctionVersion
             })
             .catch((error) => {
                 if (error.message.match(/Cannot find /)) {
@@ -162,15 +163,12 @@ class Plugin {
                   // TODO: Build a nice Serverless Error
                   //
                   throw error
-            });
+            }) : null;
 
             // Only use routing config if we are in a situation where AWS can create it.
             //
             const version = Resources[functionObject.versionLogicalId]
             const useRouteConfig = currentAlias !== null && currentFunction && currentFunction.Configuration.CodeSha256 !== version.Properties.CodeSha256
-
-
-            this.serverless.cli.log(JSON.stringify(currentAlias), "versioning");
 
             this.serverless.cli.log(`Current Code Hash: ${currentFunction?.Configuration.CodeSha256}`, "versioning");
             this.serverless.cli.log(`New Code Hash: ${version.Properties.CodeSha256}`, "versioning");
