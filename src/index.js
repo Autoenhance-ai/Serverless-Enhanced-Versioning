@@ -153,7 +153,7 @@ class Plugin {
 
             const currentFunction = currentAlias ? await this.provider.request('Lambda', 'getFunction', {
                 FunctionName: functionObject.name, 
-                Version: currentAlias.FunctionVersion
+                FunctionVersion: currentAlias.FunctionVersion
             })
             .catch((error) => {
                 if (error.message.match(/Cannot find /)) {
