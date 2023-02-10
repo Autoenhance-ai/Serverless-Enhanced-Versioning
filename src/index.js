@@ -167,7 +167,10 @@ class Plugin {
             // Only use routing config if we are in a situation where AWS can create it.
             //
             const version = Resources[functionObject.versionLogicalId]
-            const useRouteConfig = currentAlias !== null && currentFunction.Configuration.CodeSha256 !== version.Properties.CodeSha256
+            const useRouteConfig = currentAlias !== null && currentFunction && currentFunction.Configuration.CodeSha256 !== version.Properties.CodeSha256
+
+            this.serverless.cli.log(`Current Code Hash: ${currentFunction?.Configuration.CodeSha256}`, "versioning");
+            this.serverless.cli.log(`New Code Hash: ${version.Properties.CodeSha256}`, "versioning");
 
             if (!useRouteConfig) {
                 this.serverless.cli.log(`Skipping set up of traffic splitting...`, "versioning");
