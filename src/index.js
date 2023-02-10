@@ -162,64 +162,14 @@ class Plugin {
                   throw error
             });
 
+            // Only use routing config if we are in a situation where AWS can create it.
+            //
+            const version = Resources[functionObject.versionLogicalId]
+            const useRouteConfig = currentAlias !== null && currentFunction.Configuration.CodeSha256 !== version.Properties.CodeSha256
+
             // const currentCodeSha = currentAlias?.FunctionVersion
-            this.serverless.cli.log("Generating Versions...", JSON.stringify(currentFunction));
-
-            // {
-            //     "Concurrency": {
-            //         "ReservedConcurrentExecutions": 100
-            //     },
-            //     "Code": {
-            //         "RepositoryType": "S3",
-            //         "Location": "https://awslambda-us-west-2-tasks.s3.us-west-2.amazonaws.com/snapshots/123456789012/my-function..."
-            //     },
-            //     "Configuration": {
-            //         "TracingConfig": {
-            //             "Mode": "PassThrough"
-            //         },
-            //         "Version": "$LATEST",
-            //         "CodeSha256": "5tT2qgzYUHoqwR616pZ2dpkn/0J1FrzJmlKidWaaCgk=",
-            //         "FunctionName": "my-function",
-            //         "VpcConfig": {
-            //             "SubnetIds": [],
-            //             "VpcId": "",
-            //             "SecurityGroupIds": []
-            //         },
-            //         "MemorySize": 128,
-            //         "RevisionId": "28f0fb31-5c5c-43d3-8955-03e76c5c1075",
-            //         "CodeSize": 304,
-            //         "FunctionArn": "arn:aws:lambda:us-west-2:123456789012:function:my-function",
-            //         "Handler": "index.handler",
-            //         "Role": "arn:aws:iam::123456789012:role/service-role/helloWorldPython-role-uy3l9qyq",
-            //         "Timeout": 3,
-            //         "LastModified": "2019-09-24T18:20:35.054+0000",
-            //         "Runtime": "nodejs10.x",
-            //         "Description": ""
-            //     }
-            // }
-
-//             {"AliasArn":"arn:aws:lambda:eu-west-1:694064703852:function:ai-prod-hdr-merge:Latest","Name":"Latest","FunctionVersion":"79","Description":"The latest version","RevisionId":"d65a65f0-c5d2-4d37-b7dd-b91808fa8d7a"}: Generating Versions...
-
-//             // "HdrDashmergeLambdaVersioncydK6HVTmnzkmmnNzP6cBe2zcy9r67Gt52AMB8V4": {
-//             //     "Type": "AWS::Lambda::Version",
-//             //     "DeletionPolicy": "Retain",
-//             //     "Properties": {
-//             //       "FunctionName": {
-//             //         "Ref": "HdrDashmergeLambdaFunction"
-//             //       },
-//             //       "CodeSha256": "b0593fdb465f9eebe0b84bede7a970c44e0eb6cad756107e1dd743b95697a6bb"
-//             //     }
-//             //   },
-// {"architecture":"arm64","memorySize":2048,"timeout":900,"image":"hdr","warmup":{"warmer":{"enabled":false}},"events":[],"name":"ai-prod-hdr-merge","package":{},"memory":2048,"vpc":{},"versionLogicalId":"HdrDashmergeLambdaVersioncydK6HVTmnzkmmnNzP6cBe2zcy9r67Gt52AMB8V4","targetAlias":{"name":"Latest","logicalId":"HdrDashmergeLambdaFunctionAliasLatest"}}: Generating Versions...
-
-// // {
-//   AliasArn: 'arn:aws:lambda:eu-west-1:694064703852:function:ai-prod-warmup-plugin-warmer:Latest',
-//   Name: 'Latest',
-//   FunctionVersion: '1',
-//   Description: 'The latest version',
-//   RevisionId: 'c17e5609-f7e3-464f-877a-563cadb89f98'
-// }
-// WarmUpPluginWarmerLambdaVersionEKjorMGyRCuswKvqbYOS06cimhbW4lPDD2cszz17Tx4
+            this.serverless.cli.log("Generating Versions...", currentFunction.Configuration.CodeSha256);
+            this.serverless.cli.log("Generating Versions...", version.Properties.CodeSha256);
 
             Resources[aliasLogicalId] = {
                 "Type" : "AWS::Lambda::Alias",
@@ -231,7 +181,7 @@ class Plugin {
                     },
                     "Name": aliasName,
                     "ProvisionedConcurrencyConfig": provisionedConcurrencyVersion?.Properties.ProvisionedConcurrencyConfig,
-                    "RoutingConfig" : currentAlias ? {
+                    "RoutingConfig" : useRouteConfig ? {
                         "AdditionalVersionWeights": [{
                             "FunctionVersion" : {
                                 "Fn::GetAtt": [ functionObject.versionLogicalId, "Version" ]
