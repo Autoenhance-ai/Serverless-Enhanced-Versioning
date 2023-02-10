@@ -147,10 +147,21 @@ class Plugin {
             aliasLogicalId = `${functionLogicalId}AliasLatest`;
             functionObject.targetAlias = { name: aliasName, logicalId: aliasLogicalId };
 
-            // const currentCodeSha = currentAlias?.FunctionVersion
+            const currentFunction = await this.provider.request('Lambda', 'getFunction', {
+                FunctionName: functionObject.name
+            })
+            .catch((error) => {
+                if (error.message.match(/Cannot find /)) {
+                    return null
+                  }
+  
+                  // TODO: Build a nice Serverless Error
+                  //
+                  throw error
+            });
 
-            this.serverless.cli.log("Generating Versions...", JSON.stringify(currentAlias));
-            this.serverless.cli.log("Generating Versions...", JSON.stringify(functionObject));
+            // const currentCodeSha = currentAlias?.FunctionVersion
+            this.serverless.cli.log("Generating Versions...", JSON.stringify(currentFunction));
 
             // {
             //     "Concurrency": {
@@ -184,6 +195,20 @@ class Plugin {
             //         "Description": ""
             //     }
             // }
+
+            {"AliasArn":"arn:aws:lambda:eu-west-1:694064703852:function:ai-prod-hdr-merge:Latest","Name":"Latest","FunctionVersion":"79","Description":"The latest version","RevisionId":"d65a65f0-c5d2-4d37-b7dd-b91808fa8d7a"}: Generating Versions...
+
+            // "HdrDashmergeLambdaVersioncydK6HVTmnzkmmnNzP6cBe2zcy9r67Gt52AMB8V4": {
+            //     "Type": "AWS::Lambda::Version",
+            //     "DeletionPolicy": "Retain",
+            //     "Properties": {
+            //       "FunctionName": {
+            //         "Ref": "HdrDashmergeLambdaFunction"
+            //       },
+            //       "CodeSha256": "b0593fdb465f9eebe0b84bede7a970c44e0eb6cad756107e1dd743b95697a6bb"
+            //     }
+            //   },
+{"architecture":"arm64","memorySize":2048,"timeout":900,"image":"hdr","warmup":{"warmer":{"enabled":false}},"events":[],"name":"ai-prod-hdr-merge","package":{},"memory":2048,"vpc":{},"versionLogicalId":"HdrDashmergeLambdaVersioncydK6HVTmnzkmmnNzP6cBe2zcy9r67Gt52AMB8V4","targetAlias":{"name":"Latest","logicalId":"HdrDashmergeLambdaFunctionAliasLatest"}}: Generating Versions...
 
 // {
 //   AliasArn: 'arn:aws:lambda:eu-west-1:694064703852:function:ai-prod-warmup-plugin-warmer:Latest',
