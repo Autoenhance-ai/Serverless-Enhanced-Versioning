@@ -115,6 +115,8 @@ class Plugin {
 
         for (var functionName of this.functions) {
 
+            this.serverless.cli.log(`Generating Version for ${functionName}...`, "versioning");
+
             const functionObject = this.serverless.service.getFunction(functionName);
             const functionLogicalId = this.naming.getLambdaLogicalId(functionName)
             const aliasName = "Latest"
@@ -166,6 +168,10 @@ class Plugin {
             //
             const version = Resources[functionObject.versionLogicalId]
             const useRouteConfig = currentAlias !== null && currentFunction.Configuration.CodeSha256 !== version.Properties.CodeSha256
+
+            if (!useRouteConfig) {
+                this.serverless.cli.log(`Skipping set up of traffic splitting...`, "versioning");
+            }
 
             Resources[aliasLogicalId] = {
                 "Type" : "AWS::Lambda::Alias",
