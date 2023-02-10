@@ -169,6 +169,9 @@ class Plugin {
             const version = Resources[functionObject.versionLogicalId]
             const useRouteConfig = currentAlias !== null && currentFunction && currentFunction.Configuration.CodeSha256 !== version.Properties.CodeSha256
 
+
+            this.serverless.cli.log(JSON.stringify(currentAlias), "versioning");
+
             this.serverless.cli.log(`Current Code Hash: ${currentFunction?.Configuration.CodeSha256}`, "versioning");
             this.serverless.cli.log(`New Code Hash: ${version.Properties.CodeSha256}`, "versioning");
 
