@@ -185,28 +185,14 @@ class Plugin {
             //     }
             // }
 
-            const currentAlias = await this.provider.request('Lambda', 'getAlias', {
-                FunctionName: functionObject.name,
-                Name: aliasName
-            })
-            .catch((error) => {
-                if (error.message.match(/Cannot find /)) {
-                  return null
-                }
-
-                // TODO: Build a nice Serverless Error
-                //
-                throw error
-            });
-
-{
-  AliasArn: 'arn:aws:lambda:eu-west-1:694064703852:function:ai-prod-warmup-plugin-warmer:Latest',
-  Name: 'Latest',
-  FunctionVersion: '1',
-  Description: 'The latest version',
-  RevisionId: 'c17e5609-f7e3-464f-877a-563cadb89f98'
-}
-WarmUpPluginWarmerLambdaVersionEKjorMGyRCuswKvqbYOS06cimhbW4lPDD2cszz17Tx4
+// {
+//   AliasArn: 'arn:aws:lambda:eu-west-1:694064703852:function:ai-prod-warmup-plugin-warmer:Latest',
+//   Name: 'Latest',
+//   FunctionVersion: '1',
+//   Description: 'The latest version',
+//   RevisionId: 'c17e5609-f7e3-464f-877a-563cadb89f98'
+// }
+// WarmUpPluginWarmerLambdaVersionEKjorMGyRCuswKvqbYOS06cimhbW4lPDD2cszz17Tx4
 
             Resources[aliasLogicalId] = {
                 "Type" : "AWS::Lambda::Alias",
