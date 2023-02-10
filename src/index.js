@@ -114,11 +114,6 @@ class Plugin {
         for (var functionName of this.functions) {
 
             const functionObject = this.serverless.service.getFunction(functionName);
-
-            // Ignore functions made by the warm-up plugin
-            //
-            if (functionObject.name == 'WarmUpPluginWarmerLambdaFunction') continue;
-
             const functionLogicalId = this.naming.getLambdaLogicalId(functionName)
             const aliasName = "Latest"
 
@@ -128,7 +123,7 @@ class Plugin {
                 return resource.Properties?.FunctionName?.Ref === functionLogicalId;
             });
 
-            const currentAlias =  await this.provider.request('Lambda', 'getAlias', {
+            const currentAlias = await this.provider.request('Lambda', 'getAlias', {
                 FunctionName: functionObject.name,
                 Name: aliasName
             })
@@ -151,6 +146,14 @@ class Plugin {
 
             aliasLogicalId = `${functionLogicalId}AliasLatest`;
             functionObject.targetAlias = { name: aliasName, logicalId: aliasLogicalId };
+
+            // const currentCodeSha = currentAlias?.FunctionVersion
+
+            this.serverless.cli.log("Generating Versions...", JSON.stringify(currentAlias));
+            this.serverless.cli.log("Generating Versions...", functionObject.versionLogicalId);
+
+            console.log(currentAlias)
+            console.log(functionObject.versionLogicalId);
 
             Resources[aliasLogicalId] = {
                 "Type" : "AWS::Lambda::Alias",
