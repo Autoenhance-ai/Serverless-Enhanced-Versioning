@@ -1,4 +1,6 @@
 class Plugin {
+    // TODO: Document and tidy-up
+    //
     constructor(serverless) {
 
         this.serverless = serverless;
@@ -47,7 +49,7 @@ class Plugin {
                 console.error(error)
             });
 
-            // TODO: handle running against already demoted config or a promoted config or no rotuing config
+            // TODO: handle running against already demoted config or a promoted config or no routing config
             //
             var newWeights = {}
 
@@ -84,7 +86,7 @@ class Plugin {
                 console.error(error)
             });
 
-            // TODO: handle running against already demoted config or a promoted config or no rotuing config
+            // TODO: handle running against already demoted config or a promoted config or no routing config
             //
             const newVersion = Object.keys(currentAlias?.RoutingConfig?.AdditionalVersionWeights ?? {})[0]
 
@@ -113,6 +115,8 @@ class Plugin {
 
         for (var functionName of this.functions) {
 
+            this.serverless.cli.log(`Generating Version for ${functionName}...`, "versioning");
+
             const functionObject = this.serverless.service.getFunction(functionName);
             const functionLogicalId = this.naming.getLambdaLogicalId(functionName)
             const aliasName = "Latest"
@@ -123,7 +127,7 @@ class Plugin {
                 return resource.Properties?.FunctionName?.Ref === functionLogicalId;
             });
 
-            const currentAlias =  await this.provider.request('Lambda', 'getAlias', {
+            const currentAlias = await this.provider.request('Lambda', 'getAlias', {
                 FunctionName: functionObject.name,
                 Name: aliasName
             })
@@ -147,6 +151,32 @@ class Plugin {
             aliasLogicalId = `${functionLogicalId}AliasLatest`;
             functionObject.targetAlias = { name: aliasName, logicalId: aliasLogicalId };
 
+            const currentFunction = currentAlias ? await this.provider.request('Lambda', 'getFunction', {
+                FunctionName: functionObject.name, 
+                Qualifier: currentAlias.FunctionVersion
+            })
+            .catch((error) => {
+                if (error.message.match(/Cannot find /)) {
+                    return null
+                  }
+  
+                  // TODO: Build a nice Serverless Error
+                  //
+                  throw error
+            }) : null;
+
+            // Only use routing config if we are in a situation where AWS can create it.
+            //
+            const version = Resources[functionObject.versionLogicalId]
+            const useRouteConfig = currentAlias !== null && currentFunction && currentFunction.Configuration.CodeSha256 !== version.Properties.CodeSha256
+
+            this.serverless.cli.log(`Current Code Hash: ${currentFunction?.Configuration.CodeSha256}`, "versioning");
+            this.serverless.cli.log(`New Code Hash: ${version.Properties.CodeSha256}`, "versioning");
+
+            if (!useRouteConfig) {
+                this.serverless.cli.log(`Skipping set up of traffic splitting...`, "versioning");
+            }
+
             Resources[aliasLogicalId] = {
                 "Type" : "AWS::Lambda::Alias",
                 "Properties" : {
@@ -157,7 +187,7 @@ class Plugin {
                     },
                     "Name": aliasName,
                     "ProvisionedConcurrencyConfig": provisionedConcurrencyVersion?.Properties.ProvisionedConcurrencyConfig,
-                    "RoutingConfig" : currentAlias ? {
+                    "RoutingConfig" : useRouteConfig ? {
                         "AdditionalVersionWeights": [{
                             "FunctionVersion" : {
                                 "Fn::GetAtt": [ functionObject.versionLogicalId, "Version" ]
