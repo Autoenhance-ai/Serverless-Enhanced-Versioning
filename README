@@ -12,5 +12,6 @@ When deploying for the first time without any aliases we will shift all traffic 
 - Add support to Code Deploy for incremental traffice shifting
 - Add support to disable/enable canary deployment
 - Add way to deploy for the first time without all traffic being shifted.
-- Add way to deploy new function
 - Resolve TODOs
+- Solve breaking of serverless
+- Create versioning issue in serverless
