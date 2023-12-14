@@ -205,7 +205,7 @@ class Plugin {
             this.serverless.cli.log(`New Code Hash: ${version.Properties.CodeSha256}`, "versioning");
 
             if (!useRouteConfig) {
-                this.serverless.cli.log(`Skipping set up of traffic splitting...`, "versioning");
+                this.serverless.cli.log(`Skipping set up of traffic splitting for ${functionObject.name}...`, "versioning");
             }
 
             Resources[aliasLogicalId] = {
