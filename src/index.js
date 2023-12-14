@@ -10,9 +10,14 @@ class Plugin {
     constructor(serverless) {
 
         this.serverless = serverless;
-        this.service = this.serverless.service
+        this.service = this.serverless.service;
         this.provider = serverless.getProvider('aws');
-        this.naming = this.provider.naming
+        this.naming = this.provider.naming;
+
+        this.config = Object.assign({
+            latestAliasName: 'Latest',
+            versionName: null
+        }, this.service.custom.versioning);
     	
         this.commands = {
             'demote': {
@@ -43,9 +48,25 @@ class Plugin {
         return this.service.provider.compiledCloudFormationTemplate
     }
 
-    // getLatestAlias(function) {
+    async getLatestAlias(functionName) {
 
-    // }
+        const functionObject = this.serverless.service.getFunction(functionName);
+
+        return await this.provider.request('Lambda', 'getAlias', {
+            FunctionName: functionObject.name,
+            Name: this.config.latestAliasName
+        })
+        .catch((error) => {
+
+            if (error.message.match(/Cannot find /)) {
+                return null
+            }
+
+            // TODO: Build a nice Serverless Error
+            //
+            throw error
+        });
+    }
 
     async demote() {
 
@@ -53,22 +74,13 @@ class Plugin {
 
         for (var functionName of this.functions) {
 
-            const functionObject = this.serverless.service.getFunction(functionName);
-            const aliasName = "Latest"
-
-            const currentAlias =  await this.provider.request('Lambda', 'getAlias', {
-                FunctionName: functionObject.name,
-                Name: aliasName
-            })
-            .catch((error) => {
-                console.error(error)
-            });
+            const currentAlias = await this.getLatestAlias(functionName);
 
             // TODO: handle running against already demoted config or a promoted config or no routing config
             //
             var newWeights = {}
 
-            for (var version in currentAlias?.RoutingConfig?.AdditionalVersionWeights ?? {}) {
+            for (var version in latestAlias?.RoutingConfig?.AdditionalVersionWeights ?? {}) {
                 newWeights[version] = 0;
             }
 
@@ -76,7 +88,7 @@ class Plugin {
             //
             await this.provider.request('Lambda', 'updateAlias', {
                 FunctionName: functionObject.name,
-                Name: aliasName,
+                Name: this.config.latestAliasName,
                 RoutingConfig: {
                     AdditionalVersionWeights: newWeights
                 }
@@ -91,15 +103,7 @@ class Plugin {
         for (var functionName of this.functions) {
 
             const functionObject = this.serverless.service.getFunction(functionName);
-            const aliasName = "Latest"
-
-            const currentAlias =  await this.provider.request('Lambda', 'getAlias', {
-                FunctionName: functionObject.name,
-                Name: aliasName
-            })
-            .catch((error) => {
-                console.error(error)
-            });
+            const currentAlias = await this.getLatestAlias(functionName);
 
             // TODO: handle running against already demoted config or a promoted config or no routing config
             //
@@ -112,36 +116,29 @@ class Plugin {
             await this.provider.request('Lambda', 'updateAlias', {
                 FunctionName: functionObject.name,
                 FunctionVersion: newVersion,
-                Name: aliasName,
+                Name: this.config.latestAliasName,
                 RoutingConfig: {}
             })
         }
     }
 
-    generateRandomString(length) {
-        var result           = '';
-        var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        var charactersLength = characters.length;
-        for ( var i = 0; i < length; i++ ) {
-            result += characters.charAt(Math.floor(Math.random() * charactersLength));
-        }
-        return result;
-    }
-
     async tagAlias() {
 
+        // TODO: Check before deployment starts that the version is new
+        //
+        
         this.serverless.cli.log("Tagging alias...", "versioning");
 
         for (var functionName of this.functions) {
             
             const functionObject = this.serverless.service.getFunction(functionName);
-            const aliasName = this.generateRandomString(60)
-            const version = Resources[functionObject.versionLogicalId]
+            const currentAlias = await this.getLatestAlias(functionName);
+            const newVersion = Object.keys(currentAlias?.RoutingConfig?.AdditionalVersionWeights ?? {})[0]
 
             await this.provider.request('Lambda', 'createAlias', {
                 FunctionName: functionObject.name,
-                FunctionVersion: version.Version,
-                Name: aliasName
+                FunctionVersion: newVersion,
+                Name: this.config.versionName
             })
             .catch((error) => {
                 console.error(error)
@@ -173,19 +170,7 @@ class Plugin {
                 return resource.Properties?.FunctionName?.Ref === functionLogicalId;
             });
 
-            const currentAlias = await this.provider.request('Lambda', 'getAlias', {
-                FunctionName: functionObject.name,
-                Name: aliasName
-            })
-            .catch((error) => {
-                if (error.message.match(/Cannot find /)) {
-                  return null
-                }
-
-                // TODO: Build a nice Serverless Error
-                //
-                throw error
-            });
+            const currentAlias = await this.getLatestAlias(functionName);
 
             let provisionedConcurrencyVersion = null;
 
