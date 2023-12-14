@@ -129,20 +129,14 @@ class Plugin {
         this.serverless.cli.log("Tagging alias...", "versioning");
 
         for (var functionName of this.functions) {
-
+            
             const functionObject = this.serverless.service.getFunction(functionName);
             const aliasName = this.generateRandomString(60)
-
-            const currentFunction =  await this.provider.request('Lambda', 'getFunction', {
-                FunctionName: functionObject.name
-            })
-            .catch((error) => {
-                console.error(error)
-            });
+            const version = Resources[functionObject.versionLogicalId]
 
             await this.provider.request('Lambda', 'createAlias', {
                 FunctionName: functionObject.name,
-                FunctionVersion: currentFunction.FunctionVersion,
+                FunctionVersion: version.Version,
                 Name: aliasName
             })
             .catch((error) => {
