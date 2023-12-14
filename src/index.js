@@ -131,7 +131,7 @@ class Plugin {
         for (var functionName of this.functions) {
 
             const functionObject = this.serverless.service.getFunction(functionName);
-            const aliasName = generateRandomString(60)
+            const aliasName = this.generateRandomString(60)
 
             const currentFunction =  await this.provider.request('Lambda', 'getFunction', {
                 FunctionName: functionObject.name
