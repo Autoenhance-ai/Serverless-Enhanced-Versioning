@@ -25,7 +25,7 @@ class Plugin {
 
         this.hooks = {
             "after:aws:package:finalize:mergeCustomProviderResources": this.generateResources.bind(this),
-            // TODO: Add inject after finalize
+            "after:deploy:deploy": this.tagAlias.bind(this),
             "demote:run": this.demote.bind(this),
             "promote:run": this.promote.bind(this),
         };
@@ -39,7 +39,7 @@ class Plugin {
         return this.service.provider.compiledCloudFormationTemplate
     }
 
-    // getAlias(function) {
+    // getLatestAlias(function) {
 
     // }
 
@@ -114,6 +114,16 @@ class Plugin {
         }
     }
 
+    generateRandomString(length) {
+        var result           = '';
+        var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        var charactersLength = characters.length;
+        for ( var i = 0; i < length; i++ ) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        }
+        return result;
+    }
+
     async tagAlias() {
 
         this.serverless.cli.log("Tagging alias...", "versioning");
@@ -121,7 +131,7 @@ class Plugin {
         for (var functionName of this.functions) {
 
             const functionObject = this.serverless.service.getFunction(functionName);
-            const aliasName = "Latest" 
+            const aliasName = generateRandomString(60)
 
             const currentFunction =  await this.provider.request('Lambda', 'getFunction', {
                 FunctionName: functionObject.name
