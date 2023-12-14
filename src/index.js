@@ -18,6 +18,9 @@ class Plugin {
             'demote': {
                 lifecycleEvents: ['run'],
             },
+            'tag': {
+                lifecycleEvents: ['run'],
+            },
             'promote': {
                 lifecycleEvents: ['run'],
             },
@@ -28,6 +31,7 @@ class Plugin {
             "after:deploy:deploy": this.tagAlias.bind(this),
             "demote:run": this.demote.bind(this),
             "promote:run": this.promote.bind(this),
+            "tag:run": this.tagAlias.bind(this),
         };
     }
 
