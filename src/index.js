@@ -1,4 +1,10 @@
+// TODO:
+// - Add custom area
+// - Write unit tests
+//
+
 class Plugin {
+
     // TODO: Document and tidy-up
     //
     constructor(serverless) {
@@ -19,6 +25,7 @@ class Plugin {
 
         this.hooks = {
             "after:aws:package:finalize:mergeCustomProviderResources": this.generateResources.bind(this),
+            // TODO: Add inject after finalize
             "demote:run": this.demote.bind(this),
             "promote:run": this.promote.bind(this),
         };
@@ -31,6 +38,10 @@ class Plugin {
     get compiledTpl () {
         return this.service.provider.compiledCloudFormationTemplate
     }
+
+    // getAlias(function) {
+
+    // }
 
     async demote() {
 
@@ -100,6 +111,33 @@ class Plugin {
                 Name: aliasName,
                 RoutingConfig: {}
             })
+        }
+    }
+
+    async tagAlias() {
+
+        this.serverless.cli.log("Tagging alias...", "versioning");
+
+        for (var functionName of this.functions) {
+
+            const functionObject = this.serverless.service.getFunction(functionName);
+            const aliasName = "Latest" 
+
+            const currentFunction =  await this.provider.request('Lambda', 'getFunction', {
+                FunctionName: functionObject.name
+            })
+            .catch((error) => {
+                console.error(error)
+            });
+
+            await this.provider.request('Lambda', 'createAlias', {
+                FunctionName: functionObject.name,
+                FunctionVersion: currentFunction.FunctionVersion,
+                Name: aliasName
+            })
+            .catch((error) => {
+                console.error(error)
+            });
         }
     }
 
